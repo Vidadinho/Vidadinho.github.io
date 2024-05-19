@@ -99,7 +99,7 @@ const Login = () => {
             <span className={styles.register}>
               <p>
                 Don't have an account?
-                <Link to="/ register">Register</Link>
+                <Link to="/register">Register</Link>
               </p>
             </span>
           </div>
