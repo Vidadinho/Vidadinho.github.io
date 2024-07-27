@@ -12,6 +12,9 @@ import {
   REMOVE_ACTIVE_USER,
 } from "../../redux/slice/authSlice";
 import ShowOnLogin, { ShowOnLogout } from "../hiddenLinks/hiddenlink";
+import AdminOnlyRoute, {
+  AdminOnlyLink,
+} from "../adminOnlyRoute/AdminOnlyRoute";
 
 const logo = (
   <div className={styles.logo}>
@@ -117,6 +120,15 @@ const Header = () => {
               {logo}
               <FaTimes size={22} color="#fff" onClick={hideMenu} />
             </li>
+
+            <li>
+              <AdminOnlyLink>
+                <Link to="/admin/home">
+                  <button className="--btn --btn-primary">Admin</button>
+                </Link>
+              </AdminOnlyLink>
+            </li>
+
             <li>
               <NavLink to="/" className={activeLink}>
                 Home
