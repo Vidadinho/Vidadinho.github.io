@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import styles from "./Header.module.scss";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { FaShoppingCart, FaTimes, FaUserCircle } from "react-icons/fa";
@@ -6,16 +6,19 @@ import { HiOutlineMenuAlt3 } from "react-icons/hi";
 import { auth } from "../../firebase/config";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { toast } from "react-toastify";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   SET_ACTIVE_USER,
   REMOVE_ACTIVE_USER,
 } from "../../redux/slice/authSlice";
 import ShowOnLogin, { ShowOnLogout } from "../hiddenLinks/hiddenlink";
-import AdminOnlyRoute, {
-  AdminOnlyLink,
-} from "../adminOnlyRoute/AdminOnlyRoute";
+import { AdminOnlyLink } from "../adminOnlyRoute/AdminOnlyRoute";
+import {
+  CALCULATE_TOTAL_QUANTITY,
+  selectCartTotalQuantity,
+} from "../../redux/slice/cartSlice";
 
+// Logo component
 const logo = (
   <div className={styles.logo}>
     <Link to="/">
@@ -26,79 +29,88 @@ const logo = (
   </div>
 );
 
-const cart = (
-  <span className={styles.cart}>
-    <Link to="/cart">
-      Cart
-      <FaShoppingCart size={20} />
-      <p>0</p>
-    </Link>
-  </span>
-);
-
+// Active link function
 const activeLink = ({ isActive }) => (isActive ? `${styles.active}` : "");
 
 const Header = () => {
   const [showMenu, setShowMenu] = useState(false);
   const [displayName, setDisplayName] = useState("");
+  const [scrollPage, setScrollPage] = useState(false);
+  const cartTotalQuantity = useSelector(selectCartTotalQuantity);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const dispatch = useDispatch();
+  // Monitor scrolling for navbar changes
+  const fixNavbar = useCallback(() => {
+    setScrollPage(window.scrollY > 50);
+  }, []);
 
-  //monitor currently signed in user
   useEffect(() => {
-    onAuthStateChanged(
-      auth,
-      (user) => {
-        if (user) {
-          //console.log(user);
+    window.addEventListener("scroll", fixNavbar);
+    return () => {
+      window.removeEventListener("scroll", fixNavbar);
+    };
+  }, [fixNavbar]);
 
-          //in cases where the displayname  is null
-          if (user.displayName == null) {
-            const u1 = user.email.substring(0, user.email.indexOf("@"));
-            const uName = u1.charAt(0).toUpperCase() + u1.slice(1);
-            setDisplayName(uName);
-          } else {
-            setDisplayName(user.displayName);
-          }
+  // Monitor currently signed-in user
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const uName = user.displayName || user.email.split("@")[0];
+        const formattedName = uName.charAt(0).toUpperCase() + uName.slice(1);
+        setDisplayName(formattedName);
 
-          dispatch(
-            SET_ACTIVE_USER({
-              email: user.email,
-              userName: user.displayName ? user.displayName : displayName,
-              userID: user.uid,
-            })
-          );
-        } else {
-          setDisplayName("");
-          dispatch(REMOVE_ACTIVE_USER());
-        }
-      },
-      [dispatch, displayName]
-    );
-  });
+        dispatch(
+          SET_ACTIVE_USER({
+            email: user.email,
+            userName: formattedName,
+            userID: user.uid,
+          })
+        );
+      } else {
+        setDisplayName("");
+        dispatch(REMOVE_ACTIVE_USER());
+      }
+    });
+
+    return () => unsubscribe();
+  }, [dispatch]);
+
+  // Calculate total cart quantity
+  useEffect(() => {
+    dispatch(CALCULATE_TOTAL_QUANTITY());
+  }, [dispatch]);
 
   const toggleMenu = () => {
-    setShowMenu(!showMenu);
+    setShowMenu((prev) => !prev);
   };
 
   const hideMenu = () => {
     setShowMenu(false);
   };
 
-  const logoutUser = () => {
-    signOut(auth)
-      .then(() => {
-        toast.success("Logout successfully.");
-        navigate("/");
-      })
-      .catch((error) => {
-        toast.error(error.message);
-      });
+  const logoutUser = async () => {
+    try {
+      await signOut(auth);
+      toast.success("Logout successful.");
+      navigate("/");
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
 
+  const cart = (
+    <span className={styles.cart}>
+      <Link to="/cart">
+        Cart
+        <FaShoppingCart size={20} />
+        <p>{cartTotalQuantity}</p>
+      </Link>
+    </span>
+  );
+
   return (
-    <header>
+    <header className={scrollPage ? `${styles.fixed}` : ""}>
       <div className={styles.header}>
         {logo}
 

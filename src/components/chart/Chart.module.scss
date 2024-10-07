@@ -1,0 +1,14 @@
+.charts {
+  width: 100%;
+  max-width: 500px;
+
+  .card {
+    padding: 1rem;
+    border: 1px solid #ccc;
+    border-bottom: 3px solid var(--color-danger);
+  }
+}
+
+.pinkBar {
+  background-color: rgba(255, 105, 180, 0.6); /* Pink color for the bar */
+}

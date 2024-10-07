@@ -1,0 +1,75 @@
+.card {
+  width: 100%;
+  max-width: 500px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  // Additional class to style the card dynamically
+  &.--primary {
+    background-color: #1f93ff;
+    color: #fff;
+  }
+
+  &.--secondary {
+    background-color: #f4f4f4;
+    color: #333;
+  }
+
+  // Title inside the card
+  h4 {
+    font-size: 1.25rem;
+    color: inherit; // Inherit color based on dynamic class
+    margin-bottom: 1rem;
+  }
+
+  form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    span {
+      width: 100%;
+      margin-bottom: 1rem;
+    }
+
+    select {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+      color: #333;
+      cursor: pointer;
+      background-color: #f9f9f9;
+      transition: border-color 0.3s ease;
+
+      &:focus {
+        outline: none;
+        border-color: #1f93ff;
+      }
+    }
+
+    button {
+      width: 100%;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 4px;
+      background-color: #1f93ff;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+
+      &:hover {
+        background-color: #1678c2;
+      }
+    }
+  }
+}

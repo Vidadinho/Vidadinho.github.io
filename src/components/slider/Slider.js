@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react"; // Import useCallback
 import { AiOutlineArrowLeft, AiOutlineArrowRight } from "react-icons/ai";
 import { sliderData } from "../../components/slider/slider-data";
 import "./Slider.scss";
@@ -8,31 +8,34 @@ const Slider = () => {
   const slideLength = sliderData.length;
 
   const autoScroll = true;
-  let slideInterval;
-  let intervalTime = 5000;
+  const intervalTime = 5000; // Time between slides in milliseconds
+  const slideInterval = useRef(null); // Use useRef for the interval
 
-  const nextSlide = () => {
-    setCurrentSlide(currentSlide === slideLength - 1 ? 0 : currentSlide + 1);
-  };
+  // Use useCallback to memoize the nextSlide function
+  const nextSlide = useCallback(() => {
+    setCurrentSlide((prev) => (prev === slideLength - 1 ? 0 : prev + 1));
+  }, [slideLength]);
 
-  const prevSlide = () => {
-    setCurrentSlide(currentSlide === 0 ? slideLength - 1 : currentSlide - 1);
-  };
+  // Use useCallback to memoize the prevSlide function
+  const prevSlide = useCallback(() => {
+    setCurrentSlide((prev) => (prev === 0 ? slideLength - 1 : prev - 1));
+  }, [slideLength]);
 
   useEffect(() => {
-    setCurrentSlide(0);
+    setCurrentSlide(0); // Set the initial slide to the first one
   }, []);
 
-  function auto() {
-    slideInterval = setInterval(nextSlide, intervalTime);
-  }
-
   useEffect(() => {
+    const auto = () => {
+      slideInterval.current = setInterval(nextSlide, intervalTime);
+    };
+
     if (autoScroll) {
       auto();
     }
-    return () => clearInterval(slideInterval);
-  }, [currentSlide]);
+
+    return () => clearInterval(slideInterval.current); // Clear the interval on component unmount
+  }, [autoScroll, nextSlide]); // Include nextSlide in the dependency array
 
   return (
     <div className="slider">
@@ -48,7 +51,7 @@ const Slider = () => {
           >
             {index === currentSlide && (
               <>
-                <img src={image} alt="slide" />
+                <img src={image} alt={heading} />
                 <div className="content">
                   <h2>{heading}</h2>
                   <p>{desc}</p>
